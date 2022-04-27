@@ -1,2 +1,4 @@
 .idea
 __pycache__
+bingen.egg-info/
+dist/

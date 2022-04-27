@@ -1,6 +1,8 @@
 import re
 from typing import List
 
+from googletrans import Translator
+
 from bingen.models import Translation, WordMetadata, SkovorodaDict
 from bingen.stardict.processor import build_de_dict
 
@@ -37,6 +39,8 @@ def translate(tokens: List[str]) -> SkovorodaDict:
             start, end = result.span()
             token = translation[start: end].strip('<k>').strip('</k>')
             translation = translation[end:]
+            translation = translation.strip()
+            translation = _translate_ua(translation)
             translation = Translation(translation=translation)
             token = WordMetadata(foreign_word=token)
             token.translations.append(translation)
@@ -45,6 +49,19 @@ def translate(tokens: List[str]) -> SkovorodaDict:
         else:
             not_translated_counter += 1
     return sk_dict, not_translated_counter
+
+
+def _translate_ua(text):
+    translator = Translator()
+    translation =  translator.translate(text, dest='uk', src='ru')
+    text = translation.text
+    if 'посл.' in text:
+        text = text.replace('посл.', 'присл.')
+    if 'кому-л.' in text:
+        text = text.replace('кому-л.', 'кому-н.')
+    if 'високий.' in text:
+        text = text.replace('високий.', 'піднес.')
+    return text
 
 
 if __name__ == '__main__':
